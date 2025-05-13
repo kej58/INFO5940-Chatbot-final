@@ -1,3 +1,4 @@
+# Basic Prompts
 ## Prompt 1: Basic – Simple Question
 
 ### Prompt:
@@ -206,6 +207,7 @@ I'm researching for a community workshop on mental health. What are the most eff
 - No significant omissions; however, cultural adaptation or community-based examples could strengthen context for public delivery  
 - Could mention limitations or contraindications for certain techniques (e.g., unsupervised exposure)
 
+# Prompts with Context
 ## Prompt 4: With Personal Context
 
 ### Prompt:
@@ -349,7 +351,8 @@ From a neurobiological perspective, what anxiety management techniques have been
 - Did not address accessibility or applicability of these interventions in real-world care settings  
 - Lacks discussion of side effects or individual variability
 
-## Prompt 6: With Comparing Approaches
+# Comparative Prompts
+## Prompt 6: Comparing Approaches
 
 ### Prompt:
 How do cognitive-behavioral therapy (CBT) approaches to anxiety management compare with mindfulness-based interventions in terms of effectiveness, time to see benefits, and long-term outcomes?
@@ -421,7 +424,7 @@ How do cognitive-behavioral therapy (CBT) approaches to anxiety management compa
 - Lacks discussion of cost, accessibility, or therapist training requirements  
 - Would benefit from more data on hybrid or integrative treatment protocols
 
-## Prompt 7: With Cultural Comparison 
+## Prompt 7: Cultural Comparison 
 
 ### Prompt:
 How do approaches to anxiety treatment differ between Western psychological practices and Eastern traditional methods? Are there cultural practices from around the world that show promise but lack formal research?
