@@ -1,0 +1,128 @@
+---
+title: "Prompt Evaluation & Analysis Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: united
+    highlight: tango
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(readr)
+library(dplyr)
+library(knitr)
+library(ggplot2)
+library(reshape2)
+```
+
+## 1. Evaluation Dimensions
+
+| Dimension | Description |
+|---------------------|-------------|
+| **Completeness**     | Whether the answer fully addresses the question with sufficient scope and depth. |
+| **Relevance**        | How well the answer aligns with the prompt intent and phrasing. |
+| **Authority**        | The credibility of cited sources (e.g., .gov, academic journals). |
+| **Recency**          | How recent and up-to-date the cited information is. |
+| **Factual Accuracy** | Whether the response includes accurate and verifiable facts. |
+| **Information Depth**| The level of detail, mechanism, reasoning, or data involved in the answer. |
+
+To evaluate RAG outputs more precisely, we used a six-dimension framework: completeness, relevance, authority, recency, factual accuracy, and information depth. This structure enabled more targeted and nuanced assessments beyond a single overall score, helping reveal not just what was said, but how well-supported and informative each response was.
+
+## 2. Scoring Process and Summary Table
+```{r}
+
+scores <- read_csv("Prompt Evaluation Table.csv", show_col_types = FALSE)
+kable(head(scores, 5), format = "markdown")
+```
+
+
+*Note: The table above shows the first 5 rows. Full evaluation scores are included in the CSV file.*
+
+Each prompt output was scored across the six dimensions. To ensure fairness, we compared prompts within the same topic and used LLM tools to help convert qualitative judgments into consistent numerical scores. Human oversight was still applied for edge cases such as unclear sources. The resulting scores were aggregated by prompt type, and the summary table below shows the average for each dimension. This forms the basis for deeper analysis.
+
+## 3. Prompt Type vs Score Analysis
+
+To analyze how different prompt types performed, we calculated average scores across all six evaluation dimensions and visualized the results through a combination of summary table, heatmap, and bar chart. These tools provided both detailed and big-picture insights into performance trends.
+
+### 3.1 Summary Table
+
+The summary table below displays the average score for each evaluation dimension by prompt type. We grouped prompt outputs by type and calculated the mean for each dimension, including a final average across all dimensions. This table served as the foundation for further visual analysis.
+
+```{r}
+score_summary <- scores %>%
+  group_by(Prompt_Type) %>%
+  summarise(
+    Completeness = round(mean(Completeness), 2),
+    Relevance = round(mean(Relevance), 2),
+    Authority = round(mean(Authority), 2),
+    Recency = round(mean(Recency), 2),
+    Factual_Accuracy = round(mean(Factual_Accuracy), 2),
+    Information_Depth = round(mean(Information_Depth), 2),
+    Average_Score = round(mean(Average_Score), 2)
+  )
+
+kable(score_summary)
+```
+
+### 3.2 Heatmap of Evaluation Dimensions
+
+The heatmap provides a visual representation of how each prompt type performed across all six evaluation dimensions. Color intensity corresponds to the score magnitude, making it easy to compare strengths and weaknesses at a glance. This view helps identify prompt types that perform consistently well across dimensions and those that struggle in areas such as authority or depth.
+
+```{r fig.width=12}
+library(reshape2)
+library(ggplot2)
+
+score_long <- melt(score_summary, id.vars = "Prompt_Type")
+ggplot(score_long, aes(x = variable, y = Prompt_Type, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(x = "Evaluation Dimension", y = "Prompt Type", fill = "Score") +
+  theme_minimal()
+
+```
+
+### 3.3 Bar Chart of Overall Performance
+
+The bar chart ranks prompt types based on their overall average score. By sorting from lowest to highest and displaying results horizontally, the chart clearly reveals which prompt styles are most effective overall. It complements the heatmap by offering a more direct comparison of general effectiveness across prompt categories.
+
+```{r}
+ggplot(score_summary, aes(x = reorder(Prompt_Type, Average_Score), y = Average_Score)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Average Score by Prompt Type", x = "Prompt Type", y = "Average Score") +
+  theme_minimal()
+
+```
+
+Together, the table and charts form a cohesive analytical pipeline: the table provides quantitative structure, the heatmap reveals dimension-level contrasts, and the bar chart clarifies which prompt types are most effective overall. By combining multiple visual formats, I aimed to present both granular insights and big-picture takeaways in a way that would support the key findings that follow.
+
+
+## 4. Key Findings
+
+Our evaluation revealed clear differences in output quality across prompt types, with several consistent trends emerging from the score summaries and visual analysis. Below, we outline the most important findings:
+
+- **Comparative prompts consistently outperformed all other prompt types.**  
+  - *Comparative – Clinical Approaches* achieved a **perfect average score of 5.00** across all six evaluation dimensions, making it the strongest-performing prompt in our dataset.  
+  - Other comparative variants—such as *Comparative – Cultural*, *Comparative – Practice Gap*, and *Comparative – Applications*—also performed exceptionally well, each with average scores above **4.7**. These prompts particularly excelled in **Authority** and **Information Depth**, suggesting that comparative framing encourages more structured and well-sourced outputs.
+
+- **Prompts with added context also showed strong results.**  
+  - *Context – Technical* prompts received an **overall average score of 4.78**, with perfect scores in **Completeness** and **Information Depth**. This indicates that domain-specific language helps guide RAG systems toward more expert-level, accurate responses.  
+  - *Context – Personal* prompts also performed well (average: **4.72**), especially in **Relevance**, **Factual Accuracy**, and **Completeness**. Prompts that framed questions around personal use cases or specific needs led to more tailored and practical results.
+
+- **Basic prompts were generally adequate but lacked depth and authority.**  
+  - Prompts like *Basic – Simple*, *Basic – Specific*, and *Basic – With Background* scored well in **Relevance** and **Completeness**, but underperformed in **Authority** and **Information Depth**, typically averaging between **4.2 and 4.5**.  
+  - While these prompt types are suitable for quick factual responses, they are less effective when tasks require nuance, recent evidence, or credible sourcing.
+
+- **The weakest-performing prompt was *Comparative – Geographic*.**  
+  - Despite being comparative in structure, it had the **lowest overall average score (4.25)** due to low scores in **Authority**, **Factual Accuracy**, and **Information Depth**.  
+  - This suggests that broad geographic comparisons may need tighter framing or better-scoped inputs to trigger high-quality retrieval from RAG models.
+
+- **Visual analysis reinforced these findings.**  
+  - The **heatmap** revealed strong consistency among top-performing prompts across all six dimensions, while lower-performing types showed uneven patterns.  
+  - The **bar chart** clearly highlighted the performance gap, with comparative and context-rich prompts occupying the top ranks, and simpler formats clustered lower.
+
+Together, these findings demonstrate that thoughtful prompt engineering—especially comparative framing and context-aware phrasing—can substantially improve the relevance, credibility, and depth of responses generated by RAG systems.
+
